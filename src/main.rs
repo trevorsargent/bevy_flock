@@ -1,39 +1,45 @@
 use bevy::prelude::*;
 
-struct Person;
+struct Tower;
 
-struct Name(String);
+struct Height(i32);
 
 fn main() {
     App::build()
         .add_plugins(DefaultPlugins)
-        .add_plugin(HelloPlugin)
+        .add_plugin(TowerPlugin)
         .run();
 }
 
-fn add_people(commands: &mut Commands) {
-    commands
-        .spawn((Person, Name("Elaina Proctor".to_string())))
-        .spawn((Person, Name("Renzo Hume".to_string())))
-        .spawn((Person, Name("Zayna Nieves".to_string())));
+fn add_tower(commands: &mut Commands) {
+    commands.spawn((Tower, Height(0)));
 }
 
-fn greet_people(query: Query<&Name, With<Person>>) {
-    for name in query.iter() {
-        println!("Hello {}!", name.0)
+fn tick_tower(mut query: Query<&mut Height, With<Tower>>) {
+    for mut height in query.iter_mut() {
+        if height.0 > 100 {
+            height.0 = 0
+        } else {
+            height.0 += 1
+        }
     }
 }
 
-fn hello_world() {
-    println!("Hello, World!")
+fn display_tower(query: Query<&Height, With<Tower>>) {
+    for h in query.iter() {
+        for _ in 0..(h.0) {
+            print!(".")
+        }
+        println!()
+    }
 }
 
-pub struct HelloPlugin;
+pub struct TowerPlugin;
 
-impl Plugin for HelloPlugin {
+impl Plugin for TowerPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(add_people.system())
-            .add_system(hello_world.system())
-            .add_system(greet_people.system());
+        app.add_startup_system(add_tower.system())
+            .add_system(tick_tower.system())
+            .add_system(display_tower.system());
     }
 }
